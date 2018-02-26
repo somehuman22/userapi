@@ -4,6 +4,7 @@ import (
 	"log"
 )
 
+//User ... models for user
 type User struct {
 	ID       int    `json:"id"`
 	Realname string `json:"realname"`
@@ -12,15 +13,16 @@ type User struct {
 }
 
 //GetUser ... gets a user by id
-func GetUser(id int) User {
+func GetUser(id int) (User, error) {
 	var user User
-	DB.QueryRow("select id, realname, username, email from users where id = $1", id).Scan(&user.ID, &user.Realname, &user.Username, &user.Email)
-	return user
+	row := DB.QueryRow("select id, realname, username, email from users where id = $1", id)
+	err := row.Scan(&user.ID, &user.Realname, &user.Username, &user.Email)
+	return user, err
 }
 
 //GetAllUsers ... gets all users
-func GetAllUsers() []User {
-	rows, _ := DB.Query("select id, realname, username, email from users")
+func GetAllUsers() ([]User, error) {
+	rows, err := DB.Query("select id, realname, username, email from users")
 	defer rows.Close()
 	var users []User
 	for rows.Next() {
@@ -31,7 +33,7 @@ func GetAllUsers() []User {
 		}
 		users = append(users, tempUser)
 	}
-	return users
+	return users, err
 }
 
 //CreateUser ... adds a new user, gets an http request with json body
